@@ -1,51 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
-
-const TimeFilter = ({ active, label, onClick }: { active: boolean, label: string, onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className={`px-4 py-2 rounded-full text-sm ${
-      active ? 'bg-gray-700 text-white' : 'bg-[#eeeeee] text-gray-800'
-    }`}
-  >
-    {label}
-  </button>
-);
-
-
-const MiniGraph = () => (
-  <div className="flex items-end h-6 gap-[2px] mt-2 justify-end pr-1">
-    <div className="graph-bar h-1"></div>
-    <div className="graph-bar h-1"></div>
-    <div className="graph-bar h-2"></div>
-    <div className="graph-bar h-3"></div>
-    <div className="graph-bar h-5"></div>
-  </div>
-);
-
-
-const MetricCard = ({ title, value, hasGraph = true }: { title: string, value: string | number, hasGraph?: boolean }) => (
-  <div className="bg-white p-4 rounded-lg shadow-sm mb-3">
-    <div className="flex justify-between items-center">
-      <div>
-        <p className="text-gray-500 text-sm mb-1">{title}</p>
-        <p className="text-xl font-bold text-black">{value}</p>
-      </div>
-      {hasGraph && (
-        <button className="text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 8v4l3 3"></path>
-          </svg>
-        </button>
-      )}
-    </div>
-    {hasGraph && <MiniGraph />}
-  </div>
-);
-
+import Link from 'next/link';
 
 const SideMenu = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
   return (
@@ -77,14 +33,14 @@ const SideMenu = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void })
             {/* ANÁLISE */}
             <div className="mb-6">
               <p className="text-xs text-gray-500 font-medium mb-2">ANÁLISE</p>
-              <a href="/relatorio-midia">
-                <div className="flex items-center py-2 px-1 hover:bg-gray-100 rounded">
+              <Link href="/relatorio-midia">
+                <div className="flex items-center py-2 px-1 bg-gray-100 rounded">
                   <div className="w-6 mr-3">
                     <MenuIcon name="bar-chart" />
                   </div>
-                  <span className="text-sm">Relatório De Mídia</span>
+                  <span className="text-sm font-medium">Relatório De Mídia</span>
                 </div>
-              </a>
+              </Link>
               <MenuItem icon="users" label="Registros" />
               <MenuItem icon="activity" label="Registro De Pixels" />
             </div>
@@ -233,9 +189,17 @@ const MenuIcon = ({ name }: { name: string }) => {
   }
 };
 
-export default function Home() {
-  const [activeFilter, setActiveFilter] = useState('hoje');
+// Componente para cada métrica do relatório
+const MetricCard = ({ title, value }: { title: string, value: string | number }) => (
+  <div className="bg-white p-5 rounded-lg shadow-sm mb-4">
+    <p className="text-gray-400 text-sm text-center mb-2">{title}</p>
+    <p className="text-2xl text-black text-center">{value}</p>
+  </div>
+);
+
+export default function RelatorioMidia() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <main className="flex min-h-screen flex-col bg-[#f7f7f7] w-full md:max-w-4xl lg:max-w-5xl mx-auto">
@@ -255,22 +219,16 @@ export default function Home() {
               <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
           </button>
-          <h1 className="text-lg font-medium">Caixa De Entrada</h1>
+          <h1 className="text-lg font-medium">Relatório de Mídia</h1>
         </div>
         <div className="flex items-center space-x-2">
-          <button className="p-2">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-          </button>
-          <button className="p-2">
+          <Link href="/" className="p-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M22 6c0-1.1-.9-2-2-2H4c-1.1 0-2 .9-2 2"></path>
               <path d="M22 6v13a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6"></path>
               <path d="m2 6 10 7 10-7"></path>
             </svg>
-          </button>
+          </Link>
           <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center text-white text-sm font-medium">
             BR
           </div>
@@ -279,49 +237,53 @@ export default function Home() {
 
       {/* Conteúdo */}
       <div className="p-4">
-        {/* Saldo */}
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <p className="text-sm text-gray-700">Saldo</p>
-            <p className="text-xl font-bold text-green-500">R$0</p>
+        {/* Barra de pesquisa */}
+        <div className="flex mb-4">
+          <div className="relative flex-1">
+            <input
+              type="text"
+              placeholder="ID, search..."
+              className="w-full px-3 py-2 pl-9 rounded-lg border border-gray-300 focus:outline-none focus:ring-1 focus:ring-green-500"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="absolute left-3 top-2.5 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </div>
           </div>
-          <button className="bg-white py-1 px-4 rounded-lg text-sm border border-gray-200 shadow-sm">
-            Detalhes
+          <button className="ml-2 bg-gray-100 p-2 rounded-lg text-gray-600">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+            </svg>
           </button>
         </div>
 
-        {/* Filtros de tempo */}
-        <div className="flex space-x-2 overflow-x-auto pb-4">
-          <TimeFilter 
-            active={activeFilter === 'hoje'} 
-            label="Hoje" 
-            onClick={() => setActiveFilter('hoje')} 
-          />
-          <TimeFilter 
-            active={activeFilter === 'ontem'} 
-            label="Ontem" 
-            onClick={() => setActiveFilter('ontem')} 
-          />
-          <TimeFilter 
-            active={activeFilter === 'essa_semana'} 
-            label="Essa Semana" 
-            onClick={() => setActiveFilter('essa_semana')} 
-          />
-          <TimeFilter 
-            active={activeFilter === 'esse_mes'} 
-            label="Esse Mês" 
-            onClick={() => setActiveFilter('esse_mes')} 
-          />
+        {/* Grid de métricas - 2 colunas conforme imagem */}
+        <div className="grid grid-cols-2 gap-4 px-1">
+          <MetricCard title="Visits (unique)" value="4532" />
+          <MetricCard title="Registrations" value="4453" />
+          
+          <MetricCard title="FTD to Lead %" value="15.56%" />
+          <MetricCard title="Deposits" value="1424" />
+          
+          <MetricCard title="Deposits amount" value="238,801.95" />
+          <MetricCard title="FTDs" value="693" />
+          
+          <MetricCard title="FTDs amount" value="21,381.02" />
+          <MetricCard title="CPA" value="0" />
+          
+          <MetricCard title="RevShare" value="0" />
+          <MetricCard title="Commissions" value="0" />
+          
+          <MetricCard title="Adjustments" value="0" />
+          <MetricCard title="Payments" value="0" />
+          
+          <MetricCard title="Balance" value="0" />
+          <MetricCard title="Activities count" value="317,825" />
         </div>
-
-        {/* Métricas */}
-        <MetricCard title="Cliques" value="4532" />
-        <MetricCard title="Registros" value="4453" />
-        <MetricCard title="FTDs" value="693" />
-        <MetricCard title="Valor FTD" value="R$21381.02" />
-        <MetricCard title="Comissão de CPA" value="R$0" hasGraph={false} />
-        <MetricCard title="Comissão de Rev.Share" value="R$0" hasGraph={false} />
-        <MetricCard title="Comissões" value="R$0" hasGraph={false} />
 
         {/* Footer */}
         <footer className="text-xs text-gray-400 text-center mt-6 pb-4">
@@ -330,4 +292,4 @@ export default function Home() {
       </div>
     </main>
   );
-}
+} 
