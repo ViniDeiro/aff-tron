@@ -190,16 +190,45 @@ const MenuIcon = ({ name }: { name: string }) => {
 };
 
 // Componente para cada métrica do relatório
-const MetricCard = ({ title, value }: { title: string, value: string | number }) => (
-  <div className="bg-white p-5 rounded-lg shadow-sm mb-4">
-    <p className="text-gray-400 text-sm text-center mb-2">{title}</p>
-    <p className="text-2xl text-black text-center">{value}</p>
-  </div>
-);
+const MetricCard = ({ title, value, activeTab }: { title: string, value: string | number, activeTab: string }) => {
+  // Calculando os valores
+  const currentValue = typeof value === 'string' && value.includes('%') 
+    ? parseFloat(value) 
+    : typeof value === 'string' && value.includes(',') 
+      ? parseFloat(value.replace(',', '')) 
+      : Number(value);
+  
+  const previousValue = typeof value === 'string' && value.includes('%')
+    ? (currentValue * 1.8).toFixed(2) + '%'
+    : typeof value === 'string' && value.includes(',')
+      ? (currentValue * 1.8).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+      : Math.round(currentValue * 1.8);
+  
+  const totalValue = typeof value === 'string' && value.includes('%')
+    ? ((currentValue + parseFloat(previousValue as string)) / 2).toFixed(2) + '%'
+    : typeof value === 'string' && value.includes(',')
+      ? (currentValue + currentValue * 1.8).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+      : Math.round(currentValue + currentValue * 1.8);
+
+  // Valor a ser exibido com base na aba ativa
+  const displayValue = activeTab === 'atual' 
+    ? value 
+    : activeTab === 'anterior' 
+      ? previousValue 
+      : totalValue;
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
+      <p className="text-gray-400 text-sm mb-2">{title}</p>
+      <p className="text-2xl text-black text-center">{displayValue}</p>
+    </div>
+  );
+};
 
 export default function RelatorioMidia() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('atual');
 
   return (
     <main className="flex min-h-screen flex-col bg-[#f7f7f7] w-full md:max-w-4xl lg:max-w-5xl mx-auto">
@@ -261,28 +290,50 @@ export default function RelatorioMidia() {
           </button>
         </div>
 
+        {/* Abas principais */}
+        <div className="flex border-b mb-4 bg-white p-3 rounded-t-lg">
+          <button 
+            onClick={() => setActiveTab('atual')}
+            className={`py-2 px-4 text-sm ${activeTab === 'atual' ? 'border-b-2 border-green-500 text-green-500 font-medium' : 'text-gray-500'}`}
+          >
+            Current Month
+          </button>
+          <button 
+            onClick={() => setActiveTab('anterior')}
+            className={`py-2 px-4 text-sm ${activeTab === 'anterior' ? 'border-b-2 border-green-500 text-green-500 font-medium' : 'text-gray-500'}`}
+          >
+            Previous Month
+          </button>
+          <button 
+            onClick={() => setActiveTab('total')}
+            className={`py-2 px-4 text-sm ${activeTab === 'total' ? 'border-b-2 border-green-500 text-green-500 font-medium' : 'text-gray-500'}`}
+          >
+            Total
+          </button>
+        </div>
+
         {/* Grid de métricas - 2 colunas conforme imagem */}
         <div className="grid grid-cols-2 gap-4 px-1">
-          <MetricCard title="Visits (unique)" value="4532" />
-          <MetricCard title="Registrations" value="4453" />
+          <MetricCard title="Visits (unique)" value="4532" activeTab={activeTab} />
+          <MetricCard title="Registrations" value="4453" activeTab={activeTab} />
           
-          <MetricCard title="FTD to Lead %" value="15.56%" />
-          <MetricCard title="Deposits" value="1424" />
+          <MetricCard title="FTD to Lead %" value="15.56%" activeTab={activeTab} />
+          <MetricCard title="Deposits" value="1424" activeTab={activeTab} />
           
-          <MetricCard title="Deposits amount" value="238,801.95" />
-          <MetricCard title="FTDs" value="693" />
+          <MetricCard title="Deposits amount" value="238,801.95" activeTab={activeTab} />
+          <MetricCard title="FTDs" value="693" activeTab={activeTab} />
           
-          <MetricCard title="FTDs amount" value="21,381.02" />
-          <MetricCard title="CPA" value="0" />
+          <MetricCard title="FTDs amount" value="21,381.02" activeTab={activeTab} />
+          <MetricCard title="CPA" value="0" activeTab={activeTab} />
           
-          <MetricCard title="RevShare" value="0" />
-          <MetricCard title="Commissions" value="0" />
+          <MetricCard title="RevShare" value="0" activeTab={activeTab} />
+          <MetricCard title="Commissions" value="0" activeTab={activeTab} />
           
-          <MetricCard title="Adjustments" value="0" />
-          <MetricCard title="Payments" value="0" />
+          <MetricCard title="Adjustments" value="0" activeTab={activeTab} />
+          <MetricCard title="Payments" value="0" activeTab={activeTab} />
           
-          <MetricCard title="Balance" value="0" />
-          <MetricCard title="Activities count" value="317,825" />
+          <MetricCard title="Balance" value="0" activeTab={activeTab} />
+          <MetricCard title="Activities count" value="317,825" activeTab={activeTab} />
         </div>
 
         {/* Footer */}
