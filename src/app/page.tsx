@@ -26,25 +26,40 @@ const MiniGraph = () => (
 );
 
 
-const MetricCard = ({ title, value, hasGraph = true }: { title: string, value: string | number, hasGraph?: boolean }) => (
-  <div className="bg-white p-4 rounded-lg shadow-sm mb-3">
-    <div className="flex justify-between items-center">
-      <div>
-        <p className="text-gray-500 text-sm mb-1">{title}</p>
-        <p className="text-xl font-bold text-black">{value}</p>
+const MetricCard = ({ title, value, hasGraph = true }: { title: string, value: string | number, hasGraph?: boolean }) => {
+  // Formatando valores monetários para o padrão brasileiro
+  let displayValue = value;
+  if (typeof value === 'string' && value.startsWith('R$')) {
+    // Extrair o valor numérico (remover o R$ e espaço)
+    const numericPart = value.substring(2).trim();
+    // Verificar se é um valor com separador de milhares e decimal no formato americano
+    if (numericPart.includes(',') && numericPart.includes('.')) {
+      // Converter de R$21,381.02 para R$21.381,02
+      const numericValue = parseFloat(numericPart.replace(',', ''));
+      displayValue = `R$${numericValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+  }
+
+  return (
+    <div className="bg-white p-4 rounded-lg shadow-sm mb-3">
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-gray-500 text-sm mb-1">{title}</p>
+          <p className="text-xl font-bold text-black">{displayValue}</p>
+        </div>
+        {hasGraph && (
+          <button className="text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 8v4l3 3"></path>
+            </svg>
+          </button>
+        )}
       </div>
-      {hasGraph && (
-        <button className="text-gray-400">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 8v4l3 3"></path>
-          </svg>
-        </button>
-      )}
+      {hasGraph && <MiniGraph />}
     </div>
-    {hasGraph && <MiniGraph />}
-  </div>
-);
+  );
+};
 
 
 const SideMenu = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {

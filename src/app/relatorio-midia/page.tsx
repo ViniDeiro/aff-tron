@@ -201,21 +201,28 @@ const MetricCard = ({ title, value, activeTab }: { title: string, value: string 
   const previousValue = typeof value === 'string' && value.includes('%')
     ? (currentValue * 1.8).toFixed(2) + '%'
     : typeof value === 'string' && value.includes(',')
-      ? (currentValue * 1.8).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+      ? (currentValue * 1.8).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
       : Math.round(currentValue * 1.8);
   
   const totalValue = typeof value === 'string' && value.includes('%')
     ? ((currentValue + parseFloat(previousValue as string)) / 2).toFixed(2) + '%'
     : typeof value === 'string' && value.includes(',')
-      ? (currentValue + currentValue * 1.8).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+      ? (currentValue + currentValue * 1.8).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
       : Math.round(currentValue + currentValue * 1.8);
 
   // Valor a ser exibido com base na aba ativa
-  const displayValue = activeTab === 'atual' 
+  let displayValue = activeTab === 'atual' 
     ? value 
     : activeTab === 'anterior' 
       ? previousValue 
       : totalValue;
+
+  // Convertendo valores monetários para o formato brasileiro
+  if (typeof displayValue === 'string' && displayValue.includes(',') && !displayValue.includes('%')) {
+    // Converte de 238,801.95 para 238.801,95
+    const numericValue = parseFloat(displayValue.replace(',', ''));
+    displayValue = numericValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  }
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
