@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 
 const SideMenu = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
@@ -210,19 +210,17 @@ const MetricCard = ({ title, value, activeTab }: { title: string, value: string 
       ? (currentValue + currentValue * 1.8).toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
       : Math.round(currentValue + currentValue * 1.8);
 
+  // Formatar o valor atual se for do tipo número com vírgula
+  const formattedCurrentValue = typeof value === 'string' && value.includes(',')
+    ? currentValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})
+    : value;
+
   // Valor a ser exibido com base na aba ativa
-  let displayValue = activeTab === 'atual' 
-    ? value 
+  const displayValue = activeTab === 'atual' 
+    ? formattedCurrentValue 
     : activeTab === 'anterior' 
       ? previousValue 
       : totalValue;
-
-  // Convertendo valores monetários para o formato brasileiro
-  if (typeof displayValue === 'string' && displayValue.includes(',') && !displayValue.includes('%')) {
-    // Converte de 238,801.95 para 238.801,95
-    const numericValue = parseFloat(displayValue.replace(',', ''));
-    displayValue = numericValue.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-  }
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm mb-4">
